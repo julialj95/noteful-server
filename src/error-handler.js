@@ -1,3 +1,5 @@
+const { NODE_ENV } = require("./config.js");
+
 function errorHandler(error, req, res, next) {
   let response;
   if (NODE_ENV === "production") {
