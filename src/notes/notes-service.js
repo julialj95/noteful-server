@@ -6,7 +6,7 @@ const NotesService = {
   getNoteById(knex, id) {
     return knex.select("*").from("notes").where("id", id).first();
   },
-  //add selection .then(rows => rows[0]) ???
+
   createNote(knex, newNote) {
     return knex.insert(newNote).into("notes").returning("*");
   },

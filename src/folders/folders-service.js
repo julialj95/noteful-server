@@ -5,8 +5,11 @@ const FoldersService = {
   getFolderById(knex, id) {
     return knex.select("*").from("folders").where({ id }).first();
   },
-  createFolder(knex, newFolderName) {
-    return knex.insert(newFolderName).into("folders").returning("*");
+  createFolder(knex, newFolder) {
+    return knex("folders")
+      .insert(newFolder)
+      .returning("*")
+      .then((rows) => rows[0]);
   },
   updateFolder(knex, id, newFields) {
     return knex("folders").where({ id }).update(newFields);

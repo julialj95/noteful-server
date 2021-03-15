@@ -2,32 +2,38 @@ const express = require("express");
 const xss = require("xss");
 const path = require("path");
 const FoldersService = require("./folders-service");
+const NotesService = require("../notes/notes-service");
 const FoldersRouter = express.Router();
 const jsonParser = express.json();
 
 FoldersRouter.route("/")
   .get((req, res, next) => {
     FoldersService.getAllFolders(req.app.get("db"))
-      .then((folders) => res.json(folders))
+      .then((folders) => {
+        if (!folders) {
+          return res.status(400).send("No ");
+        }
+        res.json(folders);
+      })
       .catch(next);
   })
   .post(jsonParser, (req, res, next) => {
     const newFolderName = req.body.folder_name;
-
+    const newFolder = { folder_name: newFolderName };
+    console.log(newFolder);
     if (!newFolderName) {
       return res.status(400).json({
         error: { message: `Missing folder name in request body` },
       });
     }
 
-    FoldersService.createFolder(req.app.get("db"), newFolderName)
+    FoldersService.createFolder(req.app.get("db"), newFolder)
       .then((folder) => {
         console.log("folder name", folder.folder_name);
         res
           .status(201)
           .location(path.posix.join(req.originalUrl) + `/${folder.id}`)
-          // .json({ folder_name: xss(folder.folder_name) });
-          .then((response) => console.log("response", response));
+          .json({ folder_name: xss(folder.folder_name) });
       })
       .catch(next);
   });
