@@ -65,7 +65,7 @@ describe("Noteful endpoints", function () {
       });
     });
 
-    describe.only("POST /api/folders", () => {
+    describe("POST /api/folders", () => {
       it(`creates a folder, responding with 201 and the new folder`, () => {
         const newFolder = {
           folder_name: "New Folder Name",
@@ -149,7 +149,6 @@ describe("Noteful endpoints", function () {
             ...testFolders[idToUpdate - 1],
             ...updateFolder,
           });
-          console.log("expected folder", expectedFolder);
           return supertest(app)
             .patch(`/api/folders/${idToUpdate}`)
             .send(updateFolder)
@@ -168,7 +167,7 @@ describe("Noteful endpoints", function () {
         it(`responds with 404`, () => {
           const folder_id = 123456;
           return supertest(app)
-            .delete(`/api/articles/${folder_id}`)
+            .delete(`/api/folders/${folder_id}`)
             .expect(404, { error: { message: `Folder doesn't exist` } });
         });
       });
@@ -366,7 +365,6 @@ describe("Noteful endpoints", function () {
             ...testNotes[idToUpdate - 1],
             ...updateNote,
           };
-          console.log("expected note", expectedNote);
           return supertest(app)
             .patch(`/api/notes/${idToUpdate}`)
             .send(updateNote)

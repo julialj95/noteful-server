@@ -9,7 +9,7 @@ serializeNote = (newNote) => ({
   id: newNote.id,
   note_name: xss(newNote.note_name),
   date_created: newNote.date_created,
-  folder: xss(newNote.folder),
+  folder: newNote.folder,
   content: xss(newNote.content),
 });
 
@@ -37,15 +37,15 @@ NotesRouter.route("/")
       .then((note) => {
         res
           .status(201)
-          .location(path.posix.join(req.originalUrl + `/${note.id}`))
-          .json(serializeNote(newNote));
+          .location(path.posix.join(req.originalUrl + `/${note[0].id}`))
+          .json(serializeNote(note[0]));
       })
       .catch(next);
   });
 
 NotesRouter.route("/:id")
   .all((req, res, next) => {
-    NotesService.getNoteById(req.app.get("db"), req.params.id) //check the param here
+    NotesService.getNoteById(req.app.get("db"), req.params.id)
       .then((note) => {
         if (!note) {
           return res.status(404).json({
@@ -58,19 +58,12 @@ NotesRouter.route("/:id")
       .catch(next);
   })
   .get((req, res, next) => {
-    res.json({
-      id: res.note.id,
-      note_name: res.note.note_name,
-      date_created: res.note.date_created,
-      folder: res.note.folder,
-      content: res.note.content,
-    });
+    res.json(serializeNote(res.note));
   })
 
   .patch(jsonParser, (req, res, next) => {
     const { id } = req.params;
     const { note_name, date_created, folder, content } = req.body;
-    console.log(note_name, date_created, folder, content);
     const noteToUpdate = { note_name, date_created, folder, content };
 
     const numberOfValues = Object.values(noteToUpdate).filter(Boolean).length;
