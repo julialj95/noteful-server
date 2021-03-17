@@ -18,10 +18,14 @@ FoldersRouter.route("/")
       .catch(next);
   })
   .post(jsonParser, (req, res, next) => {
-    const newFolderName = req.body.folder_name;
-    const newFolder = { folder_name: newFolderName };
-    console.log(newFolder);
-    if (!newFolderName) {
+    // const newFolderName = req.body.folder_name;
+    // const newFolder = { folder_name: newFolderName };
+    // console.log(newFolder);
+
+    const { folder_name } = req.body;
+    const newFolder = { folder_name };
+    console.log("newFolder", newFolder);
+    if (!newFolder) {
       return res.status(400).json({
         error: { message: `Missing folder name in request body` },
       });
@@ -39,16 +43,35 @@ FoldersRouter.route("/")
   });
 
 FoldersRouter.route("/:folder_id")
-  .get((req, res, next) => {
-    const { folder_id } = req.params;
-
-    FoldersService.getFolderById(req.app.get("db"), folder_id)
-      .then((folder) => res.json(folder))
+  .all((req, res, next) => {
+    FoldersService.getFolderById(req.app.get("db"), req.params.folder_id)
+      .then((folder) => {
+        if (!folder) {
+          return res.status(404).json({
+            error: { message: `Folder doesn't exist` },
+          });
+        }
+        res.folder = folder;
+        next();
+      })
       .catch(next);
+  })
+  .get((req, res, next) => {
+    res.json({
+      id: res.folder.id,
+      folder_name: xss(res.folder.folder_name),
+    });
   })
   .patch(jsonParser, (req, res, next) => {
     const { folder_id } = req.params;
-    const newFolderName = req.body.folder_name;
+    const { folder_name } = req.body;
+    const newFolderName = { folder_name };
+
+    // if (!folder_id) {
+    //   return res.status(400).json({
+    //     error: { message: `Folder doesn't exist` },
+    //   });
+    // }
 
     FoldersService.updateFolder(req.app.get("db"), folder_id, newFolderName)
       .then(() => {

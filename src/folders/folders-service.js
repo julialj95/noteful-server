@@ -12,7 +12,7 @@ const FoldersService = {
       .then((rows) => rows[0]);
   },
   updateFolder(knex, id, newFields) {
-    return knex("folders").where({ id }).update(newFields);
+    return knex.from("folders").where("id", id).update(newFields);
   },
   deleteFolder(knex, id) {
     return knex("folders").where({ id }).delete();

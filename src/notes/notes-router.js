@@ -23,12 +23,12 @@ NotesRouter.route("/")
   })
   .post(jsonParser, (req, res, next) => {
     const { note_name, date_created, folder, content } = req.body;
-    const newNote = { note_name, date_created, folder, content };
+    const newNote = { note_name, folder, date_created, content };
 
     for (const [key, value] of Object.entries(newNote)) {
       if (value == null) {
         return res.status(400).json({
-          error: { message: `Missing '${key}' in request body` },
+          error: { message: `Missing ${key} in request body` },
         });
       }
     }
@@ -44,29 +44,33 @@ NotesRouter.route("/")
   });
 
 NotesRouter.route("/:id")
-  .get((req, res, next) => {
-    const { id } = req.params;
-
-    NotesService.getNoteById(req.app.get("db"), id)
+  .all((req, res, next) => {
+    NotesService.getNoteById(req.app.get("db"), req.params.id) //check the param here
       .then((note) => {
         if (!note) {
           return res.status(404).json({
             error: { message: `Note doesn't exist` },
           });
         }
-        res.json({
-          id: note.id,
-          note_name: note.note_name,
-          date_created: note.date_created,
-          folder: note.folder,
-          content: note.content,
-        });
+        res.note = note;
+        next();
       })
       .catch(next);
   })
+  .get((req, res, next) => {
+    res.json({
+      id: res.note.id,
+      note_name: res.note.note_name,
+      date_created: res.note.date_created,
+      folder: res.note.folder,
+      content: res.note.content,
+    });
+  })
+
   .patch(jsonParser, (req, res, next) => {
     const { id } = req.params;
     const { note_name, date_created, folder, content } = req.body;
+    console.log(note_name, date_created, folder, content);
     const noteToUpdate = { note_name, date_created, folder, content };
 
     const numberOfValues = Object.values(noteToUpdate).filter(Boolean).length;
