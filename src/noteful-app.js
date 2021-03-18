@@ -19,8 +19,8 @@ app.get("/", (req, res) => {
   res.send("Hello, world!");
 });
 
-app.use("/api/folders", FoldersRouter);
-app.use("/api/notes", NotesRouter);
+app.use("/folders", FoldersRouter);
+app.use("/notes", NotesRouter);
 
 app.use(errorHandler);
 
