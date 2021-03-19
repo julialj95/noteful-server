@@ -1,6 +1,7 @@
 const { expect } = require("chai");
 const knex = require("knex");
 const app = require("../src/noteful-app.js");
+const { API_KEY } = require("../src/config");
 const { makeFoldersArray, makeMaliciousFolder } = require("./folders-fixtures");
 const { makeNotesArray, makeMaliciousNote } = require("./notes-fixtures");
 
@@ -29,7 +30,10 @@ describe("Noteful endpoints", function () {
     describe("GET /api/folders", () => {
       context(`Given no folders`, () => {
         it(`responds with 200 and an empty list`, () => {
-          return supertest(app).get("/api/folders").expect(200, []);
+          return supertest(app)
+            .get("/api/folders")
+            .set("Authorization", "Bearer " + API_KEY)
+            .expect(200, []);
         });
       });
 
@@ -40,12 +44,14 @@ describe("Noteful endpoints", function () {
         });
 
         it("responds with 200 and all of the folders", () => {
-          return supertest(app).get("/api/folders").expect(200, testFolders);
+          return supertest(app)
+            .get("/api/folders")
+            .set("Authorization", "Bearer " + API_KEY)
+            .expect(200, testFolders);
         });
       });
 
       context(`Given an XSS attack folder`, () => {
-        const testFolders = makeFoldersArray();
         const { maliciousFolder, expectedFolder } = makeMaliciousFolder();
 
         beforeEach("insert malicious folder", () => {
@@ -55,6 +61,7 @@ describe("Noteful endpoints", function () {
         it("removes XSS attack content", () => {
           return supertest(app)
             .get(`/api/folders`)
+            .set("Authorization", "Bearer " + API_KEY)
             .expect(200)
             .expect((res) => {
               expect(res.body[0].folder_name).to.eql(
@@ -73,6 +80,7 @@ describe("Noteful endpoints", function () {
 
         return supertest(app)
           .post("/api/folders")
+          .set("Authorization", "Bearer " + API_KEY)
           .send(newFolder)
           .expect(201)
           .expect((res) => {
@@ -81,7 +89,10 @@ describe("Noteful endpoints", function () {
             expect(res.headers.location).to.eql(`/api/folders/${res.body.id}`);
           })
           .then((res) =>
-            supertest(app).get(`/api/folders/${res.body.id}`).expect(res.body)
+            supertest(app)
+              .get(`/api/folders/${res.body.id}`)
+              .set("Authorization", "Bearer " + API_KEY)
+              .expect(res.body)
           );
       });
 
@@ -90,6 +101,7 @@ describe("Noteful endpoints", function () {
 
         return supertest(app)
           .post("/api/folders")
+          .set("Authorization", "Bearer " + API_KEY)
           .send(badFolder)
           .expect(400, {
             error: { message: `Missing folder name in request body` },
@@ -103,6 +115,7 @@ describe("Noteful endpoints", function () {
           const folder_id = 123456;
           return supertest(app)
             .get(`/api/folders/${folder_id}`)
+            .set("Authorization", "Bearer " + API_KEY)
             .expect(404, { error: { message: `Folder doesn't exist` } });
         });
       });
@@ -119,6 +132,7 @@ describe("Noteful endpoints", function () {
           const expectedFolder = testFolders[folder_id - 1];
           return supertest(app)
             .get(`/api/folders/${folder_id}`)
+            .set("Authorization", "Bearer " + API_KEY)
             .expect(200, expectedFolder);
         });
       });
@@ -130,6 +144,7 @@ describe("Noteful endpoints", function () {
           const folder_id = 123456;
           return supertest(app)
             .patch(`/api/folders/${folder_id}`)
+            .set("Authorization", "Bearer " + API_KEY)
             .expect(404, { error: { message: `Folder doesn't exist` } });
         });
       });
@@ -151,11 +166,13 @@ describe("Noteful endpoints", function () {
           });
           return supertest(app)
             .patch(`/api/folders/${idToUpdate}`)
+            .set("Authorization", "Bearer " + API_KEY)
             .send(updateFolder)
             .expect(204)
             .then((res) =>
               supertest(app)
                 .get(`/api/folders/${idToUpdate}`)
+                .set("Authorization", "Bearer " + API_KEY)
                 .expect(expectedFolder)
             );
         });
@@ -168,6 +185,7 @@ describe("Noteful endpoints", function () {
           const folder_id = 123456;
           return supertest(app)
             .delete(`/api/folders/${folder_id}`)
+            .set("Authorization", "Bearer " + API_KEY)
             .expect(404, { error: { message: `Folder doesn't exist` } });
         });
       });
@@ -186,9 +204,13 @@ describe("Noteful endpoints", function () {
           );
           return supertest(app)
             .delete(`/api/folders/${idToRemove}`)
+            .set("Authorization", "Bearer " + API_KEY)
             .expect(204)
             .then(() =>
-              supertest(app).get(`/api/folders`).expect(expectedFolders)
+              supertest(app)
+                .get(`/api/folders`)
+                .set("Authorization", "Bearer " + API_KEY)
+                .expect(expectedFolders)
             );
         });
       });
@@ -199,7 +221,10 @@ describe("Noteful endpoints", function () {
     describe("GET /api/notes", () => {
       context(`Given no notes`, () => {
         it(`responds with 200 and an empty list`, () => {
-          return supertest(app).get("/api/notes").expect(200, []);
+          return supertest(app)
+            .get("/api/notes")
+            .set("Authorization", "Bearer " + API_KEY)
+            .expect(200, []);
         });
       });
 
@@ -216,7 +241,10 @@ describe("Noteful endpoints", function () {
         });
 
         it("responds with 200 and all of the folders", () => {
-          return supertest(app).get("/api/notes").expect(200, testNotes);
+          return supertest(app)
+            .get("/api/notes")
+            .set("Authorization", "Bearer " + API_KEY)
+            .expect(200, testNotes);
         });
       });
     });
@@ -238,6 +266,7 @@ describe("Noteful endpoints", function () {
 
         return supertest(app)
           .post("/api/notes")
+          .set("Authorization", "Bearer " + API_KEY)
           .send(newNote)
           .expect(201)
           .expect((res) => {
@@ -249,7 +278,10 @@ describe("Noteful endpoints", function () {
             expect(res.headers.location).to.eql(`/api/notes/${res.body.id}`);
           })
           .then((res) =>
-            supertest(app).get(`/api/notes/${res.body.id}`).expect(res.body)
+            supertest(app)
+              .get(`/api/notes/${res.body.id}`)
+              .set("Authorization", "Bearer " + API_KEY)
+              .expect(res.body)
           );
       });
 
@@ -268,6 +300,7 @@ describe("Noteful endpoints", function () {
 
           return supertest(app)
             .post("/api/notes")
+            .set("Authorization", "Bearer " + API_KEY)
             .send(newNote)
             .expect(400, {
               error: { message: `Missing ${field} in request body` },
@@ -282,6 +315,7 @@ describe("Noteful endpoints", function () {
           const note_id = 123456;
           return supertest(app)
             .get(`/api/notes/${note_id}`)
+            .set("Authorization", "Bearer " + API_KEY)
             .expect(404, { error: { message: `Note doesn't exist` } });
         });
       });
@@ -303,6 +337,7 @@ describe("Noteful endpoints", function () {
           const expectedNote = testNotes[note_id - 1];
           return supertest(app)
             .get(`/api/notes/${note_id}`)
+            .set("Authorization", "Bearer " + API_KEY)
             .expect(200, expectedNote);
         });
       });
@@ -323,6 +358,7 @@ describe("Noteful endpoints", function () {
         it("removes XSS attack content", () => {
           return supertest(app)
             .get(`/api/notes/${maliciousNote.id}`)
+            .set("Authorization", "Bearer " + API_KEY)
             .expect(200)
             .expect((res) => {
               expect(res.body.note_name).to.eql(expectedNote.note_name);
@@ -338,6 +374,7 @@ describe("Noteful endpoints", function () {
           const note_id = 123456;
           return supertest(app)
             .patch(`/api/notes/${note_id}`)
+            .set("Authorization", "Bearer " + API_KEY)
             .expect(404, { error: { message: `Note doesn't exist` } });
         });
       });
@@ -367,11 +404,13 @@ describe("Noteful endpoints", function () {
           };
           return supertest(app)
             .patch(`/api/notes/${idToUpdate}`)
+            .set("Authorization", "Bearer " + API_KEY)
             .send(updateNote)
             .expect(204)
             .then((res) =>
               supertest(app)
                 .get(`/api/notes/${idToUpdate}`)
+                .set("Authorization", "Bearer " + API_KEY)
                 .expect(expectedNote)
             );
         });
@@ -384,6 +423,7 @@ describe("Noteful endpoints", function () {
           const note_id = 123456;
           return supertest(app)
             .delete(`/api/notes/${note_id}`)
+            .set("Authorization", "Bearer " + API_KEY)
             .expect(404, { error: { message: `Note doesn't exist` } });
         });
       });
@@ -407,8 +447,14 @@ describe("Noteful endpoints", function () {
           );
           return supertest(app)
             .delete(`/api/notes/${idToRemove}`)
+            .set("Authorization", "Bearer " + API_KEY)
             .expect(204)
-            .then(() => supertest(app).get(`/api/notes`).expect(expectedNotes));
+            .then(() =>
+              supertest(app)
+                .get(`/api/notes`)
+                .set("Authorization", "Bearer " + API_KEY)
+                .expect(expectedNotes)
+            );
         });
       });
     });
