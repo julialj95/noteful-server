@@ -10,6 +10,8 @@
     "migrate:test": "env NODE_ENV=test npm run migrate",
     "migrate:production": "heroku run npm run migrate",
     "start": "node src/server.js",
+    "seed-folders": "heroku pg:psql DATABASE_URL --app cryptic-forest-87843 < seeds/seed.folders.sql",
+    "seed-notes": "heroku pg:psql DATABASE_URL --app cryptic-forest-87843 < seeds/seed.notes.sql",
     "predeploy": "npm audit && npm run migrate:production",
     "deploy": "git push heroku main"
   },
